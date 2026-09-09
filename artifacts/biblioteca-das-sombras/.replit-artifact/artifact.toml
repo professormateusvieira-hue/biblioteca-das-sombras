@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Biblioteca das Sombras"
+description = "Biblioteca pessoal responsiva para organizar leituras em uma experiência elegante, sombria e fantástica, com navegação entre Início, Lendo, Lidos, Próximas Leituras, Lista de Desejos e Biblioteca."
+version = "1.0.0"
+id = "artifacts/biblioteca-das-sombras"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19252
+
+[services.development]
+run = "pnpm --filter @workspace/biblioteca-das-sombras run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/biblioteca-das-sombras", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/biblioteca-das-sombras/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19252"
+BASE_PATH = "/"
