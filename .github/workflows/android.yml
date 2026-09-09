@@ -1,0 +1,72 @@
+name: Android Debug APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: artifacts/biblioteca-das-sombras
+
+    env:
+      PORT: 4173
+      BASE_PATH: /
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install JavaScript dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Vite web assets
+        run: pnpm run build
+
+      - name: Sync web assets with Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Build Android debug APK
+        working-directory: artifacts/biblioteca-das-sombras/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: biblioteca-das-sombras-debug-apk
+          path: artifacts/biblioteca-das-sombras/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
