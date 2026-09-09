@@ -28,6 +28,7 @@ jobs:
             --exclude='dist/' \
             --exclude='*.tsbuildinfo' \
             --exclude='*.map' \
+            --exclude='.github/workflows/android.yml' \
             /tmp/biblioteca/Biblioteca-das-Sombras/ ./
 
       - name: Remover ZIP
